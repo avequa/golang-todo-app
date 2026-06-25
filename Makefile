@@ -13,6 +13,12 @@ env-cleanup:
 	@docker compose down todo-app-postgres
 	@-rm -rf out/pgdata
 
+env-port-forward-up:
+	@docker compose up -d port-forwarder
+
+env-port-forward-down:
+	@docker compose down port-forwarder
+
 migrate-create:
 
 	@if [ -z "$(seq)" ]; then \
