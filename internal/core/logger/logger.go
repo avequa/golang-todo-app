@@ -18,6 +18,14 @@ type Logger struct {
 	file *os.File
 }
 
+func FromContext(ctx context.Context) *Logger {
+	log, ok := ctx.Value("log").(*Logger)
+	if !ok {
+		panic("no logger in context")
+	}
+	return log
+}
+
 func NewLogger(config LoggerConfig) (*Logger, error) {
 	zapLvl := zap.NewAtomicLevel()
 	if err := zapLvl.UnmarshalText([]byte(config.Level)); err != nil {
@@ -57,5 +65,12 @@ func NewLogger(config LoggerConfig) (*Logger, error) {
 func (l *Logger) CLose() {
 	if err := l.file.Close(); err != nil {
 		fmt.Println("ошибка при закрытии лог-файла:", err)
+	}
+}
+
+func (l *Logger) With(field ...zap.Field) *Logger {
+	return &Logger{
+		Logger: l.Logger.With(field...),
+		file: l.file,
 	}
 }
