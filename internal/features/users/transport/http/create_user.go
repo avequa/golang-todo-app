@@ -18,6 +18,9 @@ type CreateUserResponse struct {
 	PhoneNumber *string `json:"phone_number"`
 }
 
+// POST /users
+// request_id
+
 func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 	var request CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {

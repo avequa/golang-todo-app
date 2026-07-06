@@ -18,7 +18,7 @@ type ApiVersionRouter struct {
 	apiVersion ApiVersion
 }
 
-func NewApiVersionRouter(
+func NewAPIVersionRouter(
 	apiVersion ApiVersion,
 ) *ApiVersionRouter {
 	return &ApiVersionRouter{
