@@ -1,8 +1,15 @@
 package core_http_middleware
 
 import (
+	"context"
 	"net/http"
+	"time"
+
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+
+	core_logger "github.com/avequa/golang-todo-app/internal/core/logger"
+	core_http_response "github.com/avequa/golang-todo-app/internal/core/transport/http/response"
 )
 
 const (
@@ -25,7 +32,7 @@ func RequestID() Middleware {
 }
 
 func Logger(log *core_logger.Logger) Middleware {
-	return func(next http Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request){
 			requestID := r.Header.Get(requestIDHeader)
 			l := log.With(
@@ -40,7 +47,7 @@ func Logger(log *core_logger.Logger) Middleware {
 
 func Panic() Middleware {
 	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w httpResponseWriter, r *http.Request) {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			log := core_logger.FromContext(ctx)
 
@@ -61,7 +68,7 @@ func Panic() Middleware {
 
 func Trace() Middleware {
 	return func(next http.Handler) http.Handler {
-		return http.HandlerFucn(func(w http.ResponseWriter, r *http.Request) {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 			log := core_logger.FromContext(ctx)
 			rw := core_http_response.NewResponseWriter(w)

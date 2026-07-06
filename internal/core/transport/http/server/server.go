@@ -1,6 +1,15 @@
 package core_http_server
 
-import "net/http"
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+
+	"go.uber.org/zap"
+
+	core_logger "github.com/avequa/golang-todo-app/internal/core/logger"
+)
 
 type HTTPServer struct {
 	mux *http.ServeMux
@@ -19,6 +28,17 @@ func NewHTTPServer(
 	}
 }
 
+func (h* HTTPServer) RegisterAPIRouters(routers ...*ApiVersionRouter) {
+	for _, router := range routers {
+		prefix := "/api" + string(router.apiVersion)
+
+		h.mux.Handle(
+			prefix+"/",
+			http.StripPrefix(prefix, router),
+		)
+	}
+}
+
 func (h *HTTPServer) Run(ctx context.Context) error {
 	server := &http.Server{
 		Addr: h.config.Addr,
@@ -33,7 +53,7 @@ func (h *HTTPServer) Run(ctx context.Context) error {
 		
 		h.log.Warn("start http server", zap.String("addr", h.config.Addr))
 
-		err := server.LestenAndServe()
+		err := server.ListenAndServe()
 
 		if !errors.Is(err, http.ErrServerClosed) {
 			ch <- err

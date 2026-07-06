@@ -1,5 +1,9 @@
 package core_http_server
 
+import (
+	"net/http"
+)
+
 type Route struct {
 	Method string
 	Path string
@@ -11,7 +15,7 @@ func NewRoute(
 	path string,
 	handler http.HandlerFunc,
 ) Route {
-	return &Route{
+	return Route{
 		Method: method,
 		Path: path,
 		Handler: handler,

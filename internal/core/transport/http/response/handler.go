@@ -2,7 +2,13 @@ package core_http_response
 
 import (
 	"fmt"
+
+	"encoding/json"
 	"net/http"
+
+	"go.uber.org/zap"
+	core_logger "github.com/avequa/golang-todo-app/internal/core/logger"
+
 )
 
 type HTTPResponseHandler struct {

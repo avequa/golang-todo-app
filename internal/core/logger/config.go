@@ -1,5 +1,10 @@
 package core_logger
 
+import (
+	"fmt"
+	"github.com/kelseyhightower/envconfig"
+)
+
 type Config struct {
 	Level string `envconfig:"LOGGER_LEVEL" required:"true"`
 	Folder string `envconfig:"LOGGER_FOLDER" required:"true"`
@@ -7,7 +12,7 @@ type Config struct {
 
 func NewConfig() (Config, error) {
 	var config Config
-	err := envconfig.Process("", &config); err != nil {
+	if err := envconfig.Process("", &config); err != nil {
 		return Config{}, fmt.Errorf("process envconfig: %w", err)
 	}
 	return config, nil

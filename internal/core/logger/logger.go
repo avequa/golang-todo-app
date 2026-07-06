@@ -2,6 +2,7 @@ package core_logger
 
 import (
 	"fmt"
+	"context"
 
 	"os"
 	"path/filepath"
@@ -26,7 +27,7 @@ func FromContext(ctx context.Context) *Logger {
 	return log
 }
 
-func NewLogger(config LoggerConfig) (*Logger, error) {
+func NewLogger(config Config) (*Logger, error) {
 	zapLvl := zap.NewAtomicLevel()
 	if err := zapLvl.UnmarshalText([]byte(config.Level)); err != nil {
 		return nil, fmt.Errorf("unmarshal log level: %w", err)
@@ -62,7 +63,7 @@ func NewLogger(config LoggerConfig) (*Logger, error) {
 	}, nil
 }
 
-func (l *Logger) CLose() {
+func (l *Logger) Close() {
 	if err := l.file.Close(); err != nil {
 		fmt.Println("ошибка при закрытии лог-файла:", err)
 	}
