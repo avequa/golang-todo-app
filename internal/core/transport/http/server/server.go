@@ -9,22 +9,26 @@ import (
 	"go.uber.org/zap"
 
 	core_logger "github.com/avequa/golang-todo-app/internal/core/logger"
+	core_http_middleware "github.com/avequa/golang-todo-app/internal/core/transport/http/middleware"
 )
 
 type HTTPServer struct {
 	mux *http.ServeMux
 	config Config
 	log *core_logger.Logger
+	middleware []core_http_middleware.Middleware
 }
 
 func NewHTTPServer(
 	config Config,
 	log *core_logger.Logger,
+	middleware ...core_http_middleware.Middleware,
 ) *HTTPServer {
 	return &HTTPServer{
 		mux: http.NewServeMux(),
 		config: config,
 		log: log,
+		middleware: middleware,
 	}
 }
 
@@ -40,9 +44,12 @@ func (h* HTTPServer) RegisterAPIRouters(routers ...*ApiVersionRouter) {
 }
 
 func (h *HTTPServer) Run(ctx context.Context) error {
+
+	mux := core_http_middleware.ChainMiddleware(h.mux, h.middleware...)
+
 	server := &http.Server{
 		Addr: h.config.Addr,
-		Handler: h.mux,
+		Handler: mux,
 	}
 
 	ch := make(chan error, 1)

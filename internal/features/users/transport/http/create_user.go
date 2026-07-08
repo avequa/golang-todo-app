@@ -26,4 +26,6 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		fmt.Println("ошибка")
 	}
+
+	rw.WriteHeader(http.StatusOK)
 }

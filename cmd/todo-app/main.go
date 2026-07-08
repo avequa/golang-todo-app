@@ -1,14 +1,16 @@
 package main
+
 import (
 	"fmt"
 
-	"os"
 	"context"
+	"os"
 	"os/signal"
 
 	"syscall"
 
 	core_logger "github.com/avequa/golang-todo-app/internal/core/logger"
+	core_http_middleware "github.com/avequa/golang-todo-app/internal/core/transport/http/middleware"
 	core_http_server "github.com/avequa/golang-todo-app/internal/core/transport/http/server"
 	users_transport_http "github.com/avequa/golang-todo-app/internal/features/users/transport/http"
 	"go.uber.org/zap"
@@ -39,8 +41,13 @@ func main() {
     httpServer := core_http_server.NewHTTPServer(
         core_http_server.NewConfigMust(),
         logger,
+        core_http_middleware.RequestID(),
+        core_http_middleware.Logger(logger),
+        core_http_middleware.Panic(),
+        core_http_middleware.Trace(),
     )
     httpServer.RegisterAPIRouters(apiVersionRouter)
+    
 	if err := httpServer.Run(ctx); err != nil {
         logger.Error("HTTP server run error", zap.Error(err))
     }
