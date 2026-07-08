@@ -41,6 +41,13 @@ func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 		statusCode = http.StatusInternalServerError
 		logFunc = h.log.Error
 	}
+
+	logFunc(msg, zap.Error(err))
+	h.errorResponse(
+		statusCode,
+		err,
+		msg,
+	)
 }
 
 func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
