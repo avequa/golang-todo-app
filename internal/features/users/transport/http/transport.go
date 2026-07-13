@@ -3,6 +3,9 @@ package users_transport_http
 import (
 	"net/http"
 
+	"context"
+
+	"github.com/avequa/golang-todo-app/internal/core/domain"
 	core_http_server "github.com/avequa/golang-todo-app/internal/core/transport/http/server"
 )
 
@@ -11,20 +14,24 @@ type UsersHTTPHandler struct {
 }
 
 type UsersService interface {
+	CreateUser(
+		ctx context.Context,
+		user domain.User,
+	) (domain.User, error)
 }
 
 func NewUsersHTTPHandler(usersService UsersService) *UsersHTTPHandler {
 	return &UsersHTTPHandler{
-		usersService:usersService,
+		usersService: usersService,
 	}
 }
 
 func (h *UsersHTTPHandler) Routes() []core_http_server.Route {
-    return []core_http_server.Route{
-        {
-            Method:  http.MethodPost,
-            Path:    "/users",
-            Handler: h.CreateUser,
-        },
-    }
+	return []core_http_server.Route{
+		{
+			Method:  http.MethodPost,
+			Path:    "/users",
+			Handler: h.CreateUser,
+		},
+	}
 }

@@ -1,8 +1,8 @@
 package core_logger
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
 	"os"
 	"path/filepath"
@@ -40,7 +40,7 @@ func NewLogger(config Config) (*Logger, error) {
 		config.Folder,
 		fmt.Sprintf("%s.log", timestamp),
 	)
-	logFile, err := os.OpenFile(logFilePath, os.O_CREATE | os.O_WRONLY, 0644)
+	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, fmt.Errorf("open log file: %w", err)
 	}
@@ -72,6 +72,6 @@ func (l *Logger) Close() {
 func (l *Logger) With(field ...zap.Field) *Logger {
 	return &Logger{
 		Logger: l.Logger.With(field...),
-		file: l.file,
+		file:   l.file,
 	}
 }

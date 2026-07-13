@@ -2,11 +2,12 @@ package core_logger
 
 import (
 	"fmt"
+
 	"github.com/kelseyhightower/envconfig"
 )
 
 type Config struct {
-	Level string `envconfig:"LOGGER_LEVEL" required:"true"`
+	Level  string `envconfig:"LOGGER_LEVEL" required:"true"`
 	Folder string `envconfig:"LOGGER_FOLDER" required:"true"`
 }
 

@@ -17,38 +17,38 @@ import (
 )
 
 func main() {
-    ctx, cancel := signal.NotifyContext(
-        context.Background(),
-        syscall.SIGINT, syscall.SIGTERM,
-    )
-    defer cancel()
+	ctx, cancel := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT, syscall.SIGTERM,
+	)
+	defer cancel()
 
-    logger, err := core_logger.NewLogger(core_logger.NewConfigMust())
-    if err != nil {
-        fmt.Println("failed to init application logger:", err)
-        os.Exit(1)
-    }
-    defer logger.Close()
+	logger, err := core_logger.NewLogger(core_logger.NewConfigMust())
+	if err != nil {
+		fmt.Println("failed to init application logger:", err)
+		os.Exit(1)
+	}
+	defer logger.Close()
 
-    logger.Debug("Hello New Go App")
+	logger.Debug("Hello New Go App")
 
-    usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(nil)
-    usersRoutes := usersTransportHTTP.Routes()
+	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(nil)
+	usersRoutes := usersTransportHTTP.Routes()
 
-    apiVersionRouter := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
-    apiVersionRouter.RegisterRoutes(usersRoutes...)
+	apiVersionRouter := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
+	apiVersionRouter.RegisterRoutes(usersRoutes...)
 
-    httpServer := core_http_server.NewHTTPServer(
-        core_http_server.NewConfigMust(),
-        logger,
-        core_http_middleware.RequestID(),
-        core_http_middleware.Logger(logger),
-        core_http_middleware.Panic(),
-        core_http_middleware.Trace(),
-    )
-    httpServer.RegisterAPIRouters(apiVersionRouter)
-    
+	httpServer := core_http_server.NewHTTPServer(
+		core_http_server.NewConfigMust(),
+		logger,
+		core_http_middleware.RequestID(),
+		core_http_middleware.Logger(logger),
+		core_http_middleware.Panic(),
+		core_http_middleware.Trace(),
+	)
+	httpServer.RegisterAPIRouters(apiVersionRouter)
+
 	if err := httpServer.Run(ctx); err != nil {
-        logger.Error("HTTP server run error", zap.Error(err))
-    }
+		logger.Error("HTTP server run error", zap.Error(err))
+	}
 }

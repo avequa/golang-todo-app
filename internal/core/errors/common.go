@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound        = errors.New("not found")
 	ErrInvalidArgument = errors.New("invalid arg")
-	ErrConflict = errors.New("conflict")
+	ErrConflict        = errors.New("conflict")
 )
