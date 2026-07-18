@@ -1,5 +1,12 @@
 package domain
 
+import (
+	"fmt"
+	"regexp"
+
+	core_errors "github.com/avequa/golang-todo-app/internal/core/errors"
+)
+
 type User struct {
 	ID      int
 	Version int
@@ -35,5 +42,33 @@ func NewUserUninitialized(
 }
 
 func (u *User) Validate() error {
-	// todo
+	fullNameLength := len([]rune(u.FullName))
+	if fullNameLength < 3 || fullNameLength > 100 {
+		return fmt.Errorf(
+			"invalid `FullName` len: %d: %w",
+			core_errors.ErrInvalidArgument,
+		)
+	}
+	
+	if u.PhoneHumber != nil {
+		phoneNumberLen := len([]rune(*u.PhoneHumber))
+		if phoneNumberLen < 10 || phoneNumberLen > 15 {
+			return fmt.Errorf(
+				"invalid `PhoneNumber`: %d: %w",
+				phoneNumberLen,
+				core_errors.ErrInvalidArgument,
+			)
+		}
+
+		re := regexp.MustCompile(`^\+[0-9]+$`)
+
+		if !re.MatchString(*u.PhoneHumber) {
+			return fmt.Errorf(
+				"invalid `PhoneNumber` format: %w",
+				core_errors.ErrInvalidArgument,
+			)
+		}
+	}
+
+	return nil
 }
