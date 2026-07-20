@@ -22,7 +22,7 @@ func NewAPIVersionRouter(
 	apiVersion ApiVersion,
 ) *ApiVersionRouter {
 	return &ApiVersionRouter{
-		ServeMux: http.NewServeMux(),
+		ServeMux:   http.NewServeMux(),
 		apiVersion: apiVersion,
 	}
 }

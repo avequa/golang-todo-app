@@ -10,13 +10,12 @@ env-down:
 	@docker compose down todo-app-postgres
 
 env-cleanup:
-	@docker compose down todo-app-postgres
-	@-rm -rf out/pgdata
+	docker compose down -v todo-app-postgres port-forwarder
 
-env-port-forward-up:
+env-port-forward:
 	@docker compose up -d port-forwarder
 
-env-port-forward-down:
+env-port-close:
 	@docker compose down port-forwarder
 
 migrate-create:
@@ -52,6 +51,7 @@ migrate-action:
 
 todo-app-run:
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
+	export POSTGRES_HOST=localhost && \
 	go mod tidy && \
 	go run cmd/todo-app/main.go
 

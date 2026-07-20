@@ -96,7 +96,7 @@ func (h *HTTPResponseHandler) JSONResponse(
 ) {
 	h.rw.WriteHeader(statusCode)
 
-	if err := json.NewDecoder(h.rw).Encode(responseBody); err != nil {
+	if err := json.NewEncoder(h.rw).Encode(responseBody); err != nil {
 		h.log.Error("write HTTP response", zap.Error(err))
 	}
 }
