@@ -33,13 +33,13 @@ func RequestID() Middleware {
 
 func Logger(log *core_logger.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request){
+		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			requestID := r.Header.Get(requestIDHeader)
 			l := log.With(
 				zap.String("request_id", requestID),
 				zap.String("url", r.URL.String()),
 			)
-			ctx := context.WithValue(r.Context(), "log", l )
+			ctx := context.WithValue(r.Context(), "log", l)
 			next.ServeHTTP(rw, r.WithContext(ctx))
 		})
 	}
@@ -77,18 +77,17 @@ func Trace() Middleware {
 
 			log.Debug(
 				"income http request",
+				zap.String("http_method", r.Method),
 				zap.Time("time", before.UTC()),
 			)
 
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(rw, r)
 
 			log.Debug(
-				"done http request", 
+				"done http request",
 				zap.Int("status_code", rw.GetStatusCodeOrPanic()),
 				zap.Duration("latency", time.Now().Sub(before)),
-		)
+			)
 		})
 	}
 }
-
-
