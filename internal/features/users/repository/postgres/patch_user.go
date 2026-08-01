@@ -2,26 +2,44 @@ package users_postgres_repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/avequa/golang-todo-app/internal/core/domain"
+	core_errors "github.com/avequa/golang-todo-app/internal/core/errors"
+	"github.com/jackc/pgx/v5"
 )
 
-func (r *UsersRepository) CreateUser(
+func (r *UsersRepository) PatchUser(
 	ctx context.Context,
+	id int,
 	user domain.User,
 ) (domain.User, error) {
-
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
 	query := `
-	INSERT INTO todo_app.users (full_name, phone_number)
-	VALUES ($1, $2)
-	RETURNING id, version, full_name, phone_number;
+	UPDATE todo_app.users
+	SET 
+		full_name=$1,
+		phone_number=$2,
+		version=version+1
+	WHERE id=$3 AND version=$4
+	RETURNING
+		id,
+		version,
+		full_name,
+		phone_number
 	`
 
-	row := r.pool.QueryRow(ctx, query, user.FullName, user.PhoneNumber)
+	row := r.pool.QueryRow(
+		ctx,
+		query,
+		user.FullName,
+		user.PhoneNumber,
+		id,
+		user.Version,
+	)
 
 	var userModel UserModel
 	err := row.Scan(
@@ -30,8 +48,16 @@ func (r *UsersRepository) CreateUser(
 		&userModel.FullName,
 		&userModel.PhoneNumber,
 	)
-	
+
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, fmt.Errorf(
+				"user with id='%d' concurrently accessed: %w",
+				id,
+				core_errors.ErrConflict,
+			)
+		}
+
 		return domain.User{}, fmt.Errorf("scan error: %w", err)
 	}
 

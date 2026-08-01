@@ -11,17 +11,33 @@ import (
 
 var requestValidator = validator.New()
 
+type validateble interface {
+	Validate() error
+}
+
 func DecodeAndValidateRequest(r *http.Request, dest any) error {
 	if err := json.NewDecoder(r.Body).Decode(dest); err != nil {
 		return fmt.Errorf(
-			"decode json: %v: %w", 
-			err, 
+			"decode json: %v: %w",
+			err,
 			core_errors.ErrInvalidArgument,
 		)
 	}
-	if err := requestValidator.Struct(dest); err != nil {
+
+	var (
+		err error
+	)
+
+	v, ok := dest.(validateble)
+	if ok {
+		err = v.Validate()
+	} else {
+		err = requestValidator.Struct(dest)
+	}
+
+	if err != nil {
 		return fmt.Errorf(
-			"ошибка валидатора: %v: %w", 
+			"ошибка валидатора: %v: %w",
 			err,
 			core_errors.ErrInvalidArgument,
 		)

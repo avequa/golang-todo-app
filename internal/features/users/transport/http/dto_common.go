@@ -14,7 +14,7 @@ func userDTOFromDomain(user domain.User) UserDTOResponse {
 		ID:          user.ID,
 		Version:     user.Version,
 		FullName:    user.FullName,
-		PhoneNumber: user.PhoneHumber,
+		PhoneNumber: user.PhoneNumber,
 	}
 }
 
