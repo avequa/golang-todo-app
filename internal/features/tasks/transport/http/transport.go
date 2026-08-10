@@ -1,8 +1,17 @@
 package tasks_transport
 
-import core_http_server "github.com/avequa/golang-todo-app/internal/core/transport/http/server"
+import (
+	"context"
+
+	"github.com/avequa/golang-todo-app/internal/core/domain"
+	core_http_server "github.com/avequa/golang-todo-app/internal/core/transport/http/server"
+)
 
 type TasksService interface {
+	CreateTask(
+		ctx context.Context,
+		task domain.Task,
+	) (domain.Task, error)
 }
 
 type TasksHTTPHandler struct {

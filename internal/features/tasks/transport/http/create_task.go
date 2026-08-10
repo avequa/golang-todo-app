@@ -2,6 +2,7 @@ package tasks_transport
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/avequa/golang-todo-app/internal/core/domain"
 	core_logger "github.com/avequa/golang-todo-app/internal/core/logger"
@@ -13,6 +14,17 @@ type CreateTaskRequest struct {
 	Title        string  `json:"title" validate:"required,min=1,max=100"`
 	Description  *string `json:"description" validate:"omitempty,min=1,max=1000"`
 	AuthorUserID int     `json:"author_user_id" validate:"required"`
+}
+
+type CreateTaskResponse struct {
+	ID           int        `json:"id"`
+	Version      int        `json:"version"`
+	Title        string     `json:"title"`
+	Description  *string    `json:"description"`
+	Completed    bool       `json:"completed"`
+	CreatedAt    time.Time  `json:"created_at"`
+	CompletedAt  *time.Time `json:"completed_at"`
+	AuthorUserID int        `json:"author_user_id"`
 }
 
 func (h *TasksHTTPHandler) CreateTask(rw http.ResponseWriter, r *http.Request) {
@@ -35,4 +47,32 @@ func (h *TasksHTTPHandler) CreateTask(rw http.ResponseWriter, r *http.Request) {
 		request.Description,
 		request.AuthorUserID,
 	)
+
+	taskDomain, err := h.tasksService.CreateTask(ctx, taskDomain)
+	if err != nil {
+		responseHandler.ErrorResponse(
+			err,
+			"failed to create task",
+		)
+
+		return
+
+	}
+
+	response := TaskDTOFromDomain(taskDomain)
+
+	responseHandler.JSONResponse(response, http.StatusCreated)
+}
+
+func TaskDTOFromDomain(task domain.Task) CreateTaskResponse {
+	return CreateTaskResponse{
+		ID:           task.ID,
+		Version:      task.Version,
+		Title:        task.Title,
+		Description:  task.Description,
+		Completed:    task.Completed,
+		CreatedAt:    task.CreatedAt,
+		CompletedAt:  task.CompletedAt,
+		AuthorUserID: task.AuthorUserID,
+	}
 }
