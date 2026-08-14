@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"context"
 	"os"
@@ -13,13 +14,22 @@ import (
 	core_pgx_pool "github.com/avequa/golang-todo-app/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/avequa/golang-todo-app/internal/core/transport/http/middleware"
 	core_http_server "github.com/avequa/golang-todo-app/internal/core/transport/http/server"
+	tasks_postgres_repository "github.com/avequa/golang-todo-app/internal/features/tasks/repository/postgres"
+	tasks_service "github.com/avequa/golang-todo-app/internal/features/tasks/service"
+	tasks_transport_http "github.com/avequa/golang-todo-app/internal/features/tasks/transport/http"
 	users_postgres_repository "github.com/avequa/golang-todo-app/internal/features/users/repository/postgres"
 	users_service "github.com/avequa/golang-todo-app/internal/features/users/service"
 	users_transport_http "github.com/avequa/golang-todo-app/internal/features/users/transport/http"
 	"go.uber.org/zap"
 )
 
+var (
+	timeZone = time.UTC
+)
+
 func main() {
+	time.Local = timeZone
+
 	ctx, cancel := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGINT, syscall.SIGTERM,
@@ -33,6 +43,8 @@ func main() {
 	}
 	defer logger.Close()
 
+	logger.Debug("app time zone", zap.Any("zone", timeZone))
+
 	logger.Debug("init postgres connection pool")
 	pool, err := core_pgx_pool.NewPool(
 		ctx,
@@ -43,12 +55,16 @@ func main() {
 	}
 	defer pool.Close()
 
-	logger.Debug("Init Feat", zap.String("feature", "users"))
+	logger.Debug("INIT FEATURE", zap.String("feature", "users"))
 
 	usersRepository := users_postgres_repository.NewUsersRepository(pool)
 	usersService := users_service.NewUsersService(usersRepository)
-
 	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(usersService)
+
+	logger.Debug("INIT FEATURE", zap.String("feature", "tasks"))
+	tasksRepository := tasks_postgres_repository.NewTasksRepository(pool)
+	tasksService := tasks_service.NewTasksService(tasksRepository)
+	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
 
 	logger.Debug("Init HTTP Server")
 
@@ -63,7 +79,8 @@ func main() {
 
 	apiVersionRouterV1 := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
 	apiVersionRouterV1.RegisterRoutes(usersTransportHTTP.Routes()...)
- 
+	apiVersionRouterV1.RegisterRoutes(tasksTransportHTTP.Routes()...)
+
 	// apiVersionRouterV2 := core_http_server.NewAPIVersionRouter(
 	// 	core_http_server.ApiVersion2,
 	// 	core_http_middleware.Dummy("api v2 middleware dummy"),

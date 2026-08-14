@@ -1,7 +1,8 @@
-package tasks_transport
+package tasks_transport_http
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/avequa/golang-todo-app/internal/core/domain"
 	core_http_server "github.com/avequa/golang-todo-app/internal/core/transport/http/server"
@@ -27,5 +28,11 @@ func NewTasksHTTPHandler(
 }
 
 func (h *TasksHTTPHandler) Routes() []core_http_server.Route {
-	return []core_http_server.Route{}
+	return []core_http_server.Route{
+		{
+			Method: http.MethodPost,
+			Path: "/tasks",
+			Handler: h.CreateTask,
+		},
+	}
 }
