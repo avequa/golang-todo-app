@@ -24,7 +24,7 @@ func (r *TasksRepository) GetTasks(
 	%s
 	ORDER BY id ASC
 	LIMIT $1
-	OFFSET $2
+	OFFSET $2;
 	`
 
 	args := []any{limit, offset}

@@ -18,6 +18,16 @@ type TasksRepository interface {
 		limit *int,
 		offset *int,
 	) ([]domain.Task, error)
+
+	GetTask(
+		ctx context.Context,
+		id int,
+	) (domain.Task, error)
+
+	DeleteTask(
+		ctx context.Context,
+		id int,
+	) error
 }
 
 type TasksService struct {
