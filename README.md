@@ -8,14 +8,20 @@ Go, PostgreSQL, `pgx/v5` с пулом соединений, `zap` для лог
 
 ## Архитектура
 
-В `internal/core` инфраструктура, общая для всего приложения: логгер, пул соединений, HTTP-сервер, middleware
-В `internal/features/users` - всё, что относится к пользователям
-В `internal/features/tasks` - всё, что относится к задачам
+В `internal/core` инфраструктура, общая для всего приложения
+В `internal/features/users`      - всё, что относится к пользователям
+В `internal/features/tasks`      - всё, что относится к задачам
+В `internal/features/statistics` - всё, что относится к статистике
 
 ```
 cmd/app/main.go                — сборка зависимостей, единственное место, где слои встречаются
-internal/core/                 — логгер, pgxpool, HTTP-сервер, middleware
+
+internal/core/                 — логгер, доменные сущности, ошибки, pgxpool, HTTP-сервер, middleware
+
 internal/features/users/       — repository, service, transport
+internal/features/tasks/       — repository, service, transport
+internal/features/statistics/  — repository, service, transport
+
 migrations/                    — миграции golang-migrate
 docs/                          — сгенерированная Swagger-спека
 ```
@@ -45,3 +51,7 @@ API поднимется на `http://localhost:8080`
 Все эндпоинты живут под префиксом `/api/v1`, версия задаётся отдельным роутером
 
 Для пользователей доступны создание (`POST /users`), список (`GET /users`), получение по идентификатору (`GET /users/{id}`), частичное обновление (`PATCH /users/{id}`) и удаление (`DELETE /users/{id}`)
+
+Для задач доступны создание (`POST /tasks`), получение списка задач (`GET /tasks`), получение задачи по ID (`GET /tasks/{id}`), удаление задачи (`DELETE /tasks/{id}`), частичное обновление задачи (`PATCH /tasks/{id}`)
+
+Для статистики доступен просмотр статистики (`GET /statistics`)
