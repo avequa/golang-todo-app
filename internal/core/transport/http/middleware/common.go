@@ -70,9 +70,10 @@ func Panic() Middleware {
 func Trace() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 			ctx := r.Context()
 			log := core_logger.FromContext(ctx)
-			// Оборачиваем ResponseWriter, чтобы иметь возможность прочитать статус-код.
+
 			rw := core_http_response.NewResponseWriter(w)
 
 			before := time.Now()
@@ -89,6 +90,32 @@ func Trace() Middleware {
 				zap.Int("status_code", rw.GetStatusCode()),
 				zap.Duration("latency", time.Now().Sub(before)),
 			)
+		})
+	}
+}
+
+func CORS() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+
+			allowedOrigins := map[string]struct{}{
+				"http://localhost:5050": {},
+			}
+
+			origin := r.Header.Get("Origin")
+
+			if _, ok := allowedOrigins[origin]; ok {
+				rw.Header().Set("Access-Control-Allow-Origin", origin)
+				rw.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
+				rw.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			}
+
+			if r.Method == http.MethodOptions {
+				rw.WriteHeader(http.StatusOK)
+				return
+			}
+
+			next.ServeHTTP(rw, r)
 		})
 	}
 }
