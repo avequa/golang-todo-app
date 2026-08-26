@@ -5,10 +5,13 @@ REST API на Go: `net/http`, PostgreSQL, `pgx` с пулом соединени
 ## Стек
 
 Go 1.26, `net/http`, PostgreSQL, `pgx/v5` + `pgxpool`, `zap` для структурированных логов, `golang-migrate` для миграций, `envconfig` для конфигурации из окружения, `validator` для валидации данных, Swagger/OpenAPI, Docker, Docker Compose, Makefile
+Спека Swagger UI генерируется из аннотаций, после правки аннотаций нужен `make swagger-gen`
 
 ## Архитектура
 
-В `internal/core` — инфраструктура, общая для всего приложения
+В `/docs` - сваггер спека
+
+В `internal/core` - инфраструктура, общая для всего приложения
 
 В `internal/features/users` - пользователи
 
@@ -37,7 +40,7 @@ docs/                         — Swagger/OpenAPI
 
 ## Логи и middleware
 
-Каждый запрос проходит через цепочку `RequestID -> Logger -> Trace -> Panic`
+Каждый запрос проходит через цепочку `CORS -> RequestID -> Logger -> Trace -> Panic`
 
 На входе генерируется идентификатор запроса и кладётся в `context.Context` под типизированным ключом, дальше он попадает во все записи лога - по нему можно собрать всю историю одного запроса
 
@@ -67,7 +70,7 @@ make migrate-down
 
 Приложение собирается через multi-stage Dockerfile: Go используется только на этапе сборки, в итоговый Alpine-образ копируется готовый бинарный файл
 
-## Запуск
+## Локальный запуск
 
 ```bash
 
@@ -77,13 +80,15 @@ cd golang-todo-app
 
 cp .env.example .env
 
-make env-up          # запуск PostgreSQL
-make migrate-up      # накатить миграции
-make todo-app-run    # запуск приложения
+make swagger-gen      # генерация спеки
+make env-up           # запуск PostgreSQL
+make env-port-forward # пробросить порты
+make migrate-up       # накатить миграции
+make todo-app-run     # запуск приложения 
 
 ```
 
-Для запуска приложения и PostgreSQL в Docker:
+## Для запуска приложения и PostgreSQL в Docker:
 
 ```bash
 
