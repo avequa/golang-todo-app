@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/avequa/golang-todo-app/internal/core/domain"
 	core_errors "github.com/avequa/golang-todo-app/internal/core/errors"
 	core_logger "github.com/avequa/golang-todo-app/internal/core/logger"
 	"go.uber.org/zap"
@@ -73,8 +74,8 @@ func (h *HTTPResponseHandler) errorResponse(
 	msg string,
 ) {
 
-	response := ErrorResponse {
-		Error: err.Error(),
+	response := ErrorResponse{
+		Error:   err.Error(),
 		Message: msg,
 	}
 
@@ -102,5 +103,14 @@ func (h *HTTPResponseHandler) JSONResponse(
 
 	if err := json.NewEncoder(h.rw).Encode(responseBody); err != nil {
 		h.log.Error("write HTTP response", zap.Error(err))
+	}
+}
+
+func (h *HTTPResponseHandler) HTMLResponse(htmlFile domain.File) {
+	h.rw.WriteHeader(http.StatusOK)
+
+	h.rw.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if _, err := h.rw.Write(htmlFile.Buffer()); err != nil {
+		h.log.Error("write HTML HTTP response", zap.Error(err))
 	}
 }

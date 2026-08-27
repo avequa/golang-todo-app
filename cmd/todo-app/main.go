@@ -24,6 +24,10 @@ import (
 	users_postgres_repository "github.com/avequa/golang-todo-app/internal/features/users/repository/postgres"
 	users_service "github.com/avequa/golang-todo-app/internal/features/users/service"
 	users_transport_http "github.com/avequa/golang-todo-app/internal/features/users/transport/http"
+	web_fs_repository "github.com/avequa/golang-todo-app/internal/features/web/repository/file_system"
+	web_service "github.com/avequa/golang-todo-app/internal/features/web/service"
+	web_transport_http "github.com/avequa/golang-todo-app/internal/features/web/transport/http"
+
 	"go.uber.org/zap"
 
 	_ "github.com/avequa/golang-todo-app/docs"
@@ -62,6 +66,11 @@ func main() {
 		logger.Fatal("failed to init postgres conn pool", zap.Error(err))
 	}
 	defer pool.Close()
+
+	logger.Debug("INIT FEATURE", zap.String("feature", "web"))
+	webRepository := web_fs_repository.NewWebRepository()
+	webService := web_service.NewWebService(webRepository)
+	webTransportHTTP := web_transport_http.NewWebHTTPHandler(webService)
 
 	logger.Debug("INIT FEATURE", zap.String("feature", "users"))
 
@@ -106,6 +115,8 @@ func main() {
 
 	httpServer.RegisterAPIRouters(apiVersionRouterV1)
 	//httpServer.RegisterAPIRouters(apiVersionRouterV2)
+
+	httpServer.RegisterRoutes(webTransportHTTP.Routes()...)
 
 	httpServer.RegisterSwagger()
 
