@@ -70,6 +70,37 @@ make migrate-down
 
 Приложение собирается через multi-stage Dockerfile: Go используется только на этапе сборки, в итоговый Alpine-образ копируется готовый бинарный файл
 
+## Переменные окружения
+
+Конфигурация приложения задаётся через `.env` (создаётся из `.env.example`)
+
+```dotenv
+HTTP_ADDR=:5050
+HTTP_SHUTDOWN_TIMEOUT=30s
+ALLOWED_ORIGINS=http://localhost:5050,null
+
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
+POSTGRES_TIMEOUT=10s
+
+LOGGER_LEVEL=DEBUG
+
+TIME_ZONE=UTC
+```
+
+`HTTP_ADDR` — адрес и порт, на котором слушает HTTP-сервер
+
+`HTTP_SHUTDOWN_TIMEOUT` — таймаут graceful shutdown
+
+`ALLOWED_ORIGINS` — список разрешённых origin для CORS
+
+`POSTGRES_*` — параметры подключения к PostgreSQL
+
+`LOGGER_LEVEL` — уровень логирования (`DEBUG`, `INFO`, и т.д.)
+
+`TIME_ZONE` — таймзона приложения
+
 ## Локальный запуск
 
 ```bash
@@ -82,7 +113,7 @@ cp .env.example .env
 
 make swagger-gen      # генерация спеки
 make env-up           # запуск PostgreSQL
-make env-port-forward # пробросить порты
+make env-port-forward # пробросить порты (исп. для локальной разработки, когда часть окружения поднята в Docker)
 make migrate-up       # накатить миграции
 make todo-app-run     # запуск приложения 
 
@@ -107,3 +138,17 @@ API поднимется на `http://localhost:5050`
 Для задач доступны создание (`POST /tasks`), получение списка задач (`GET /tasks`), получение задачи по ID (`GET /tasks/{id}`), удаление задачи (`DELETE /tasks/{id}`) и частичное обновление (`PATCH /tasks/{id}`)
 
 Для статистики доступен просмотр статистики (`GET /statistics`)
+
+## `todo-app-run` vs `todo-app-deploy`
+
+Это два независимых способа запуска, которые не синхронизируются автоматически
+
+`todo-app-run` - запускает приложение через `go run` напрямую с хоста
+Статические файлы (например `public/index.html`) читаются с диска на каждый запрос, поэтому правки подхватываются сразу, без перезапуска
+
+`todo-app-deploy` — собирает Docker-образ и запускает приложение в контейнере
+Все файлы, включая `public/index.html`, копируются внутрь образа **на момент сборки**. После правок в коде или во фронтенде обязательно нужна пересборка:
+
+```bash
+make todo-app-deploy
+```
